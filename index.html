@@ -1,53 +1,62 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>API Test</title>
+    <meta charset="UTF-8">
+    <title>Local Connection Test</title>
     <style>
-        body { font-family: sans-serif; text-align: center; margin-top: 50px; background: #f4f4f9; }
-        .box { background: white; padding: 20px; display: inline-block; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        input { padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
-        button { padding: 10px 15px; background: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; }
-        li { list-style: none; background: #eee; margin: 5px 0; padding: 10px; border-radius: 5px; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; padding: 50px; background-color: #f0f2f5; }
+        .container { background: white; padding: 30px; border-radius: 10px; display: inline-block; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        input { padding: 10px; border: 1px solid #ddd; border-radius: 5px; width: 200px; }
+        button { padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        ul { list-style: none; padding: 0; margin-top: 20px; }
+        li { background: #e9ecef; margin: 5px auto; padding: 10px; border-radius: 5px; width: 250px; }
     </style>
 </head>
 <body>
-    <div class="box">
-        <h2>Connection Test</h2>
-        <input type="text" id="userInput" placeholder="Type a name">
-        <button onclick="saveUser()">Add Name</button>
-        <ul id="list"></ul>
+    <div class="container">
+        <h1>Localhost Test</h1>
+        <input type="text" id="nameInput" placeholder="Enter a name">
+        <button onclick="addUser()">Add Name</button>
+
+        <h3>User List from Server:</h3>
+        <ul id="userList"></ul>
     </div>
 
     <script>
-        const API_URL = "https://demohost-qu2f.onrender.com";
+        // লোকালহোস্টের ব্যাকএন্ড ইউআরএল
+        const API_URL = "http://localhost:5000"; 
 
-        // ১. সার্ভার থেকে ডাটা আনা
-        async function loadUsers() {
+        async function fetchUsers() {
             try {
-                const res = await fetch(`${API}/users`);
+                const res = await fetch(`${API_URL}/users`);
                 const data = await res.json();
-                document.getElementById('list').innerHTML = data.map(u => `<li>${u.name}</li>`).join('');
+                const list = document.getElementById('userList');
+                list.innerHTML = data.map(u => `<li>${u.name}</li>`).join('');
             } catch (err) {
-                console.error("Cannot connect to server!");
+                console.error("Connection Error:", err);
             }
         }
 
-        // ২. সার্ভারে নতুন ডাটা পাঠানো
-        async function saveUser() {
-            const name = document.getElementById('userInput').value;
-            if(!name) return;
+        async function addUser() {
+            const name = document.getElementById('nameInput').value;
+            if(!name) return alert("Please type a name!");
 
-            await fetch(`${API}/add`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name })
-            });
-            document.getElementById('userInput').value = '';
-            loadUsers(); // লিস্ট রিফ্রেশ করা
+            try {
+                await fetch(`${API_URL}/add`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name })
+                });
+                document.getElementById('nameInput').value = '';
+                fetchUsers(); // লিস্ট আপডেট করার জন্য
+            } catch (err) {
+                alert("Could not connect to Backend!");
+            }
         }
 
-        loadUsers(); // পেজ খুললেই ডাটা লোড হবে
+        // পেজ লোড হলে লিস্ট দেখাবে
+        fetchUsers();
     </script>
 </body>
 </html>
-
