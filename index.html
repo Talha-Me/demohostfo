@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Test</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; margin-top: 50px; background: #f4f4f9; }
+        .box { background: white; padding: 20px; display: inline-block; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        input { padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
+        button { padding: 10px 15px; background: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        li { list-style: none; background: #eee; margin: 5px 0; padding: 10px; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h2>Connection Test</h2>
+        <input type="text" id="userInput" placeholder="Type a name">
+        <button onclick="saveUser()">Add Name</button>
+        <ul id="list"></ul>
+    </div>
+
+    <script>
+        const API_URL = "https://demohost-qu2f.onrender.com";
+
+        // ১. সার্ভার থেকে ডাটা আনা
+        async function loadUsers() {
+            try {
+                const res = await fetch(`${API}/users`);
+                const data = await res.json();
+                document.getElementById('list').innerHTML = data.map(u => `<li>${u.name}</li>`).join('');
+            } catch (err) {
+                console.error("Cannot connect to server!");
+            }
+        }
+
+        // ২. সার্ভারে নতুন ডাটা পাঠানো
+        async function saveUser() {
+            const name = document.getElementById('userInput').value;
+            if(!name) return;
+
+            await fetch(`${API}/add`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name })
+            });
+            document.getElementById('userInput').value = '';
+            loadUsers(); // লিস্ট রিফ্রেশ করা
+        }
+
+        loadUsers(); // পেজ খুললেই ডাটা লোড হবে
+    </script>
+</body>
+</html>
+
